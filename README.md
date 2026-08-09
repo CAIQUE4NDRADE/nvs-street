@@ -96,3 +96,21 @@ Esse e um modelo de **venda de estoque**, nao locacao:
   Pendente -> Pago -> Enviado -> Concluido)
 - Estoque desconta automaticamente a cada pedido registrado, e o status do
   produto atualiza sozinho (Disponivel / Baixo estoque / Esgotado)
+
+## Atualização de visual (marca + preço com desconto)
+
+O redesign visual (bandeira de marcas, cards com desconto, parcelamento)
+adicionou 2 campos novos em `produtos`: `marca` e `preco_antigo`. Se seu
+banco já existia antes dessa atualização, rode uma vez no SQL Editor:
+
+```
+supabase/migracao-marca-desconto.sql
+```
+
+Sem rodar isso, criar ou editar produto no painel admin vai dar erro
+("coluna não existe"). O site público continua funcionando normalmente
+mesmo sem rodar — só os dois campos novos ficam ocultos.
+
+Depois de rodar a migração, edite cada produto no painel (Vestidos/Produtos)
+e preencha a Marca (ex: Lacoste, Casablanca) e, se houver promoção, o
+Preço antigo — o desconto e o "Xx de R$..." aparecem sozinhos no card.

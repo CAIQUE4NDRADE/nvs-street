@@ -4,7 +4,7 @@ import {
   Plus, Pencil, Trash2, LayoutGrid, Users, ClipboardList, Wallet,
   LayoutDashboard, ArrowLeft, Lock, AlertTriangle,
   LogOut, Eye, EyeOff, Loader2, ChevronRight, ShoppingBag, Truck, CreditCard,
-  Minus, Music2
+  Minus, RefreshCw, Percent, Heart
 } from 'lucide-react';
 import * as api from './lib/api';
 import { supabase } from './lib/supabase';
@@ -41,6 +41,14 @@ const SEED_CLIENTES = [
 const SEED_PEDIDOS = [];
 
 const brl = (n) => (Number(n) || 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const installmentText = (preco) => `6x de ${brl((Number(preco) || 0) / 6)}`;
+const BRANDS = [
+  { nome: 'Lacoste', font: 'sans' },
+  { nome: 'Casablanca', font: 'serif' },
+  { nome: 'Tommy Hilfiger', font: 'sans' },
+  { nome: 'Hugo Boss', font: 'sans' },
+  { nome: 'Nike', font: 'sans' },
+];
 const fmtDate = (s) => { if (!s) return '—'; const [y, m, d] = s.split('-'); return `${d}/${m}/${y}`; };
 const nextCodigo = (list) => {
   const nums = list.map(v => parseInt((v.codigo || '').replace('NVS', ''), 10)).filter(n => !isNaN(n));
@@ -193,12 +201,13 @@ function ProdutosPanel({ produtos, pedidos, onNew, onEdit, onDelete }) {
       <p style={{ fontSize: '0.8rem', opacity: 0.5, margin: '0 0 16px', textTransform: 'none' }}>{produtos.length} produto(s) cadastrado(s)</p>
       <div className="nv-panel" style={{ overflowX: 'auto' }}>
         <table className="nv-table">
-          <thead><tr><th>Código</th><th>Nome</th><th>Categoria</th><th>Cor</th><th>Tam.</th><th>Preço</th><th>Estoque</th><th>Vendas</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Código</th><th>Nome</th><th>Marca</th><th>Categoria</th><th>Cor</th><th>Tam.</th><th>Preço</th><th>Estoque</th><th>Vendas</th><th>Status</th><th></th></tr></thead>
           <tbody>
             {produtos.map(p => (
               <tr key={p.id}>
                 <td style={{ fontWeight: 600 }}>{p.codigo}</td>
                 <td>{p.nome}</td>
+                <td>{p.marca || '—'}</td>
                 <td>{p.categoria}</td>
                 <td>{p.cor}</td>
                 <td>{p.tamanho}</td>
@@ -319,14 +328,17 @@ function FinanceiroPanel({ pedidos, despesas, onNovaDespesa, onDeleteDespesa }) 
 
 function ProdutoForm({ data, onSave, onClose }) {
   const [f, setF] = useState({
-    nome: '', categoria: CATEGORIAS[0], cor: '', tamanho: TAMANHOS[0],
-    preco: '', custo: '', estoque: '', status: 'Disponível', fornecedor: '', observacoes: '',
+    nome: '', categoria: CATEGORIAS[0], cor: '', tamanho: TAMANHOS[0], marca: '',
+    preco: '', precoAntigo: '', custo: '', estoque: '', status: 'Disponível', fornecedor: '', observacoes: '',
     ...data,
   });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
   return (
     <Modal title={data.id ? 'Editar produto' : 'Novo produto'} onClose={onClose}>
-      <Field label="Nome *"><input className="nv-input" value={f.nome} onChange={set('nome')} /></Field>
+      <div className="nv-form-grid">
+        <Field label="Nome *"><input className="nv-input" value={f.nome} onChange={set('nome')} /></Field>
+        <Field label="Marca"><input className="nv-input" value={f.marca} onChange={set('marca')} placeholder="ex: Lacoste" /></Field>
+      </div>
       <div className="nv-form-grid">
         <Field label="Categoria"><select className="nv-select" value={f.categoria} onChange={set('categoria')}>{CATEGORIAS.map(c => <option key={c}>{c}</option>)}</select></Field>
         <Field label="Tamanho"><select className="nv-select" value={f.tamanho} onChange={set('tamanho')}>{TAMANHOS.map(t => <option key={t}>{t}</option>)}<option value="Único">Único</option></select></Field>
@@ -337,12 +349,13 @@ function ProdutoForm({ data, onSave, onClose }) {
       </div>
       <div className="nv-form-grid">
         <Field label="Preço de venda (R$)"><input className="nv-input" type="number" value={f.preco} onChange={set('preco')} /></Field>
-        <Field label="Custo (R$)"><input className="nv-input" type="number" value={f.custo} onChange={set('custo')} /></Field>
+        <Field label="Preço antigo — se houver desconto (R$)"><input className="nv-input" type="number" value={f.precoAntigo} onChange={set('precoAntigo')} placeholder="deixe vazio se não tiver desconto" /></Field>
       </div>
       <div className="nv-form-grid">
+        <Field label="Custo (R$)"><input className="nv-input" type="number" value={f.custo} onChange={set('custo')} /></Field>
         <Field label="Estoque (unidades)"><input className="nv-input" type="number" value={f.estoque} onChange={set('estoque')} /></Field>
-        <Field label="Status"><select className="nv-select" value={f.status} onChange={set('status')}>{STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}</select></Field>
       </div>
+      <Field label="Status"><select className="nv-select" value={f.status} onChange={set('status')}>{STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}</select></Field>
       <Field label="Observações"><textarea className="nv-textarea" rows={2} value={f.observacoes} onChange={set('observacoes')} /></Field>
       <button className="nv-btn nv-btn-red" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={() => f.nome && onSave(f)}>Salvar</button>
     </Modal>
@@ -491,6 +504,8 @@ export default function NvsStreetApp() {
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
+  const [favorites, setFavorites] = useState(new Set());
+  const toggleFavorite = (id) => setFavorites(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   useEffect(() => {
     try {
@@ -720,13 +735,22 @@ export default function NvsStreetApp() {
 
   return (
     <div className="nv-root">
+      <div className="nv-topbar">
+        <div className="nv-wrap nv-topbar-inner">
+          <div className="nv-topbar-item"><Truck size={13} /> Frete grátis acima de <span className="accent">R$199</span></div>
+          <div className="nv-topbar-item"><Percent size={13} /> <span className="accent">5% off</span> <span className="hide-sm">no pix</span></div>
+          <div className="nv-topbar-item"><MessageCircle size={13} /> Atendimento <span className="hide-sm">via WhatsApp</span></div>
+        </div>
+      </div>
+
       <header className="nv-header">
         <div className="nv-wrap nv-nav">
-          <div className="nv-brand">NVS<span>STREET</span></div>
+          <div className="nv-brand">NVS</div>
           <div className="nv-navlinks">
-            <a href="#catalogo">Catálogo</a>
+            <a href="#catalogo">Início</a>
+            <a href="#marcas">Marcas</a>
+            <a href="#catalogo">Roupas</a>
             <a href="#como-funciona">Como comprar</a>
-            <a href="#diferenciais">Sobre</a>
             <a href="#contato">Contato</a>
           </div>
           <div className="nv-nav-icons">
@@ -740,44 +764,64 @@ export default function NvsStreetApp() {
         </div>
         {mobileMenu && (
           <div className="nv-mobile-menu">
-            <a href="#catalogo" onClick={() => setMobileMenu(false)}>Catálogo</a>
+            <a href="#catalogo" onClick={() => setMobileMenu(false)}>Início</a>
+            <a href="#marcas" onClick={() => setMobileMenu(false)}>Marcas</a>
+            <a href="#catalogo" onClick={() => setMobileMenu(false)}>Roupas</a>
             <a href="#como-funciona" onClick={() => setMobileMenu(false)}>Como comprar</a>
-            <a href="#diferenciais" onClick={() => setMobileMenu(false)}>Sobre</a>
             <a href="#contato" onClick={() => setMobileMenu(false)}>Contato</a>
           </div>
         )}
       </header>
 
-      <section className="nv-hero nv-photo" data-label="foto da coleção">
-        <div className="nv-hero-inner">
-          <div className="nv-eyebrow">Streetwear · Hortolândia</div>
-          <h1 className="nv-graffiti">Da rua<br />pra rua.</h1>
-          <p className="lede">Roupa que representa quem vive a rua. Estoque real — o que está no site, tá disponível pra sair hoje.</p>
-          <div className="nv-hero-actions">
-            <a className="nv-btn" href="#catalogo">Ver catálogo</a>
-            <a className="nv-btn-ghost" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+      <section className="nv-hero nv-photo" data-label="foto do drop atual">
+        <div className="nv-wrap nv-hero-grid">
+          <div className="nv-hero-inner" style={{ padding: 0 }}>
+            <div className="nv-eyebrow">Streetwear original · Hortolândia</div>
+            <h1 className="nv-condensed">Atitude.<br />Originalidade.<br /><span className="nv-accent">Realidade.</span></h1>
+            <p className="lede">As melhores marcas do streetwear você encontra na NVS — peças originais, direto do estoque.</p>
+            <div className="nv-hero-actions">
+              <a className="nv-btn nv-btn-red" href="#catalogo">Ver coleção <ChevronRight size={14} /></a>
+              <a className="nv-btn-ghost" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+            </div>
+          </div>
+          <div className="nv-hero-brandlist" id="marcas">
+            {BRANDS.map(b => (
+              <div key={b.nome} className={`wordmark ${b.font === 'serif' ? 'serif' : ''}`}>{b.nome}</div>
+            ))}
+            <div className="more">e muito mais...</div>
           </div>
         </div>
       </section>
 
-      <section className="nv-strip">
-        <div className="nv-wrap nv-strip-grid">
-          <div className="nv-strip-item"><Truck size={20} /><div><b>Envio rápido</b><small>para todo o Brasil</small></div></div>
-          <div className="nv-strip-item"><CreditCard size={20} /><div><b>Até 6x sem juros</b><small>no cartão</small></div></div>
-          <div className="nv-strip-item"><Lock size={20} /><div><b>Compra segura</b><small>seus dados protegidos</small></div></div>
-          <div className="nv-strip-item"><MessageCircle size={20} /><div><b>Atendimento no zap</b><small>chama que é nós!</small></div></div>
+      <section className="nv-badges-row">
+        <div className="nv-wrap nv-badges-grid">
+          <div className="nv-badge-item"><Lock size={20} /><div><b>Compra 100% segura</b><small>Seus dados protegidos</small></div></div>
+          <div className="nv-badge-item"><MessageCircle size={20} /><div><b>Atendimento via WhatsApp</b><small>Fala direto com a gente</small></div></div>
+          <div className="nv-badge-item"><Truck size={20} /><div><b>Envio para todo Brasil</b><small>Rápido e seguro</small></div></div>
+          <div className="nv-badge-item"><RefreshCw size={20} /><div><b>Troca fácil</b><small>7 dias para trocar</small></div></div>
+        </div>
+      </section>
+
+      <section className="nv-wrap" style={{ padding: '40px 0 10px' }}>
+        <div className="nv-cattiles-grid">
+          {CATEGORIAS.map(c => (
+            <div className="nv-cattile" key={c} onClick={() => { setFiltroCategoria(c); document.getElementById('catalogo')?.scrollIntoView({ behavior: 'smooth' }); }}>
+              <div className="circle nv-photo" data-label=""></div>
+              <div className="label">{c}</div>
+            </div>
+          ))}
         </div>
       </section>
 
       <section className="nv-wrap" id="catalogo" style={{ padding: '44px 0 56px' }}>
         <div className="nv-section-head">
-          <h2 style={{ fontSize: 'clamp(1.6rem,3.4vw,2.2rem)' }}>Catálogo</h2>
+          <h2 style={{ fontSize: 'clamp(1.6rem,3.4vw,2.2rem)' }}>Produtos em destaque</h2>
           <p style={{ textTransform: 'none', fontFamily: 'Inter' }}>Estoque real — o que está aqui, está disponível pra sair hoje.</p>
         </div>
         <div className="nv-filters">
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'var(--bg-2)', border: '1px solid var(--line)', padding: '9px 14px' }}>
             <Search size={14} style={{ opacity: 0.5 }} />
-            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar produto ou cor" style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: '0.85rem', width: 150 }} />
+            <input value={busca} onChange={e => setBusca(e.target.value)} placeholder="Buscar produto, marca ou cor" style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text)', fontSize: '0.85rem', width: 170 }} />
           </div>
           <select className="nv-select" style={{ width: 'auto' }} value={filtroCategoria} onChange={e => setFiltroCategoria(e.target.value)}>
             <option>Todas</option>{CATEGORIAS.map(c => <option key={c}>{c}</option>)}
@@ -787,31 +831,40 @@ export default function NvsStreetApp() {
           </select>
         </div>
         <div className="nv-grid">
-          {catalogo.map(p => (
-            <div className="nv-card" key={p.id}>
-              <div className="nv-swatch nv-photo" data-label={p.categoria}>
-                <span className="code">{p.codigo}</span>
-                <span className="tag">{p.tamanho}</span>
-                {p.status === 'Esgotado' && <div className="nv-soldout-stamp">Esgotado</div>}
+          {catalogo.map(p => {
+            const desconto = p.precoAntigo && p.precoAntigo > p.preco ? Math.round(100 - (p.preco / p.precoAntigo) * 100) : null;
+            const isFav = favorites.has(p.id);
+            return (
+              <div className="nv-card" key={p.id}>
+                <div className="nv-swatch nv-photo" data-label={p.categoria}>
+                  {desconto && <span className="nv-discount-badge">-{desconto}%</span>}
+                  <button className={`nv-fav-btn ${isFav ? 'active' : ''}`} onClick={() => toggleFavorite(p.id)}><Heart size={14} fill={isFav ? 'currentColor' : 'none'} /></button>
+                  <span className="tag">{p.tamanho}</span>
+                  {p.status === 'Esgotado' && <div className="nv-soldout-stamp">Esgotado</div>}
+                </div>
+                <div className="nv-card-body">
+                  {p.marca && <div className="brand">{p.marca}</div>}
+                  <div className="name">{p.nome}</div>
+                  <div className="occ">{p.cor}</div>
+                  <div className="nv-price-row">
+                    <span className="price">{brl(p.preco)}</span>
+                    {desconto && <span className="old">{brl(p.precoAntigo)}</span>}
+                  </div>
+                  <div className="nv-installments">{installmentText(p.preco)}</div>
+                  {p.status === 'Esgotado'
+                    ? <div className="nv-badge-no">Esgotado</div>
+                    : <div className="nv-badge-ok">{p.status}</div>}
+                  <button
+                    className="nv-btn nv-btn-red nv-add-cart-btn"
+                    disabled={p.status === 'Esgotado' || p.estoque <= 0}
+                    onClick={() => addToCart(p)}
+                  >
+                    <ShoppingBag size={13} /> Adicionar
+                  </button>
+                </div>
               </div>
-              <div className="nv-card-body">
-                <div className="cat">{p.categoria}</div>
-                <div className="name">{p.nome}</div>
-                <div className="occ">{p.cor}</div>
-                <div className="price">{brl(p.preco)}</div>
-                {p.status === 'Esgotado'
-                  ? <div className="nv-badge-no">Esgotado</div>
-                  : <div className="nv-badge-ok">{p.status}</div>}
-                <button
-                  className="nv-btn nv-add-cart-btn"
-                  disabled={p.status === 'Esgotado' || p.estoque <= 0}
-                  onClick={() => addToCart(p)}
-                >
-                  <ShoppingBag size={13} /> Adicionar
-                </button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           {catalogo.length === 0 && <div className="nv-empty" style={{ gridColumn: '1/-1' }}>Nenhum produto encontrado com esses filtros.</div>}
         </div>
       </section>
@@ -827,13 +880,13 @@ export default function NvsStreetApp() {
         </div>
       </section>
 
-      <section className="nv-diff" id="diferenciais">
+      <section className="nv-diff">
         <div className="nv-wrap nv-diff-grid">
           <div>
-            <h2>Não é lookbook.<br /><span className="nv-accent">É estoque real.</span></h2>
+            <h2>Peças originais.<br /><span className="nv-accent">Marcas de verdade.</span></h2>
             <div className="nv-diff-list">
               <div className="nv-diff-item"><div className="ic">01</div><div><h4>Estoque atualizado</h4><p>O que está no site é o que está na loja — sem prometer peça que já vendeu.</p></div></div>
-              <div className="nv-diff-item"><div className="ic">02</div><div><h4>Peças selecionadas</h4><p>Curadoria própria, sempre limitada — sem catálogo genérico.</p></div></div>
+              <div className="nv-diff-item"><div className="ic">02</div><div><h4>Curadoria de marcas</h4><p>Selecionamos peças originais de marcas como Lacoste, Casablanca, Tommy Hilfiger e mais.</p></div></div>
               <div className="nv-diff-item"><div className="ic">03</div><div><h4>Fecha rápido</h4><p>Monta a sacola, confirma no WhatsApp, resolve tudo na conversa.</p></div></div>
             </div>
           </div>
@@ -844,12 +897,20 @@ export default function NvsStreetApp() {
         </div>
       </section>
 
+      <section className="nv-promo-strip">
+        <div className="nv-wrap nv-promo-grid">
+          <div className="nv-promo-item"><div className="icon"><Percent size={17} color="#C6FF3D" /></div><div><b>5% off no Pix</b><span>Pagamento aprovado na hora!</span></div></div>
+          <div className="nv-promo-item"><div className="icon"><MessageCircle size={17} color="#C6FF3D" /></div><div><b>Atendimento via WhatsApp</b><span>Clique e fale conosco agora!</span></div></div>
+          <div className="nv-promo-item"><div className="icon"><Truck size={17} color="#C6FF3D" /></div><div><b>Envio para todo Brasil</b><span>Rápido, seguro e com rastreio</span></div></div>
+        </div>
+      </section>
+
       <footer className="nv-footer" id="contato">
         <div className="nv-wrap">
           <div className="nv-foot-grid">
             <div>
-              <div className="nv-brand" style={{ fontSize: '1.2rem', marginBottom: 12 }}>NVS<span>STREET</span></div>
-              <p>Streetwear com estoque real em Hortolândia. Sem lookbook — o que você vê é o que sai hoje.</p>
+              <div className="nv-brand" style={{ fontSize: '1.2rem', marginBottom: 12 }}>NVS</div>
+              <p>Streetwear original em Hortolândia — curadoria de marcas como Lacoste, Casablanca, Tommy Hilfiger e mais. Sem lookbook, estoque real.</p>
             </div>
             <div>
               <div className="nv-label-small">Contato</div>

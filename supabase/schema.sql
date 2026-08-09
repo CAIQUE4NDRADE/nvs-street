@@ -10,6 +10,8 @@ create table if not exists produtos (
   cor text,
   tamanho text,
   preco numeric default 0,
+  preco_antigo numeric,
+  marca text,
   custo numeric,
   estoque integer default 0,
   status text default 'Disponível',
