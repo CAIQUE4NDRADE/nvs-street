@@ -303,3 +303,14 @@ body { margin: 0; }
 .nv-wb-icon { width: 46px; height: 46px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; flex: none; }
 .nv-wb-left h3 { font-size: 1.05rem; }
 .nv-wb-left p { font-size: 0.8rem; opacity: 0.55; margin-top: 2px; text-transform: none; font-family: 'Inter', sans-serif; }
+
+/* ---- depoimentos (exemplos ilustrativos) ---- */
+.nv-testi { padding: 50px 0; border-top: 1px solid var(--line); }
+.nv-testi-head { text-align: center; margin-bottom: 26px; }
+.nv-testi-head h2 { font-size: clamp(1.5rem,3vw,2rem); }
+.nv-testi-head .note { font-size: 0.7rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px; }
+.nv-testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 860px) { .nv-testi-grid { grid-template-columns: 1fr; } }
+.nv-testi-card { background: var(--bg-2); border: 1px solid var(--line); padding: 22px; font-size: 0.86rem; line-height: 1.6; }
+.nv-testi-card .stars { color: var(--red); letter-spacing: 2px; margin-bottom: 10px; font-size: 0.82rem; }
+.nv-testi-card .who { margin-top: 14px; font-size: 0.74rem; opacity: 0.45; text-transform: uppercase; letter-spacing: 0.04em; }

@@ -991,6 +991,32 @@ export default function NvsStreetApp() {
         </div>
       </section>
 
+      <section className="nv-testi">
+        <div className="nv-wrap">
+          <div className="nv-testi-head">
+            <h2 className="nv-condensed">O que dizem sobre a NVS</h2>
+            <div className="note">Exemplos ilustrativos — em breve, avaliações reais de clientes</div>
+          </div>
+          <div className="nv-testi-grid">
+            <div className="nv-testi-card">
+              <div className="stars">★★★★★</div>
+              Peça chegou exatamente como no site — nada de imagem que engana. Isso me deu confiança pra comprar de novo.
+              <div className="who">Cliente NVS</div>
+            </div>
+            <div className="nv-testi-card">
+              <div className="stars">★★★★★</div>
+              Atendimento direto no WhatsApp, sem enrolação. Confirmei tamanho e cor antes de fechar, super rápido.
+              <div className="who">Compra confirmada</div>
+            </div>
+            <div className="nv-testi-card">
+              <div className="stars">★★★★★</div>
+              Gostei de saber que era estoque de verdade — não fiquei esperando reposição de peça que nem existia mais.
+              <div className="who">Cliente NVS</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="nv-insta">
         <div className="nv-wrap nv-insta-grid">
           <div className="nv-insta-info">
