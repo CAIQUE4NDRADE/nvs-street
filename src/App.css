@@ -207,13 +207,13 @@ body { margin: 0; }
 
 /* ---- redesign: hero com marcas ---- */
 .nv-hero { min-height: 480px; height: auto; padding: 56px 0; align-items: center; }
-.nv-hero-grid { display: grid; grid-template-columns: 1.3fr 0.7fr; gap: 30px; align-items: center; width: 100%; }
-@media (max-width: 860px) { .nv-hero-grid { grid-template-columns: 1fr; } }
-.nv-hero-brandlist { display: flex; flex-direction: column; gap: 14px; align-items: flex-end; text-align: right; }
-@media (max-width: 860px) { .nv-hero-brandlist { display: none; } }
-.nv-hero-brandlist .wordmark { font-family: 'Anton', sans-serif; font-size: 1.1rem; letter-spacing: 0.02em; opacity: 0.9; text-transform: uppercase; }
-.nv-hero-brandlist .wordmark.serif { font-family: Georgia, serif; font-style: italic; font-weight: 400; letter-spacing: 0.01em; }
-.nv-hero-brandlist .more { font-size: 0.72rem; opacity: 0.4; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px; }
+.nv-hero-photo { position: absolute; inset: 0; z-index: 0; }
+.nv-hero::after {
+  content: ''; position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(10,10,10,0.8) 0%, rgba(10,10,10,0.45) 55%, rgba(10,10,10,0.15) 100%);
+}
+.nv-hero-grid { display: block; width: 100%; position: relative; z-index: 2; }
+.nv-hero-inner { position: relative; z-index: 2; max-width: 460px; }
 
 /* trust badges row */
 .nv-badges-row { border-bottom: 1px solid var(--line); padding: 20px 0; }
