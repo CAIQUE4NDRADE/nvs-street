@@ -4,7 +4,7 @@ import { supabase } from './supabase';
 const produtoOut = (p) => ({
   id: p.id, codigo: p.codigo, nome: p.nome, categoria: p.categoria, cor: p.cor,
   tamanho: p.tamanho, preco: p.preco, precoAntigo: p.preco_antigo, marca: p.marca || '',
-  imagemUrl: p.imagem_url || '',
+  imagemUrl: p.imagem_url || '', imagemUrl2: p.imagem_url_2 || '',
   custo: p.custo, estoque: p.estoque, status: p.status,
   fornecedor: p.fornecedor || '', observacoes: p.observacoes || '',
 });
@@ -14,6 +14,7 @@ const produtoIn = (p) => ({
   preco_antigo: p.precoAntigo === '' || p.precoAntigo == null ? null : Number(p.precoAntigo),
   marca: p.marca || null,
   imagem_url: p.imagemUrl || null,
+  imagem_url_2: p.imagemUrl2 || null,
   custo: p.custo === '' || p.custo == null ? null : Number(p.custo),
   estoque: Number(p.estoque) || 0, status: p.status,
   fornecedor: p.fornecedor || null, observacoes: p.observacoes || null,
@@ -24,13 +25,13 @@ export async function listProdutos() {
   if (error) throw error;
   return data.map(produtoOut);
 }
-export async function createProduto(p) {
-  const { data, error } = await supabase.from('produtos').insert(produtoIn(p)).select().single();
+export async function createProduto(v) {
+  const { data, error } = await supabase.from('produtos').insert(produtoIn(v)).select().single();
   if (error) throw error;
   return produtoOut(data);
 }
-export async function updateProduto(p) {
-  const { data, error } = await supabase.from('produtos').update(produtoIn(p)).eq('id', p.id).select().single();
+export async function updateProduto(v) {
+  const { data, error } = await supabase.from('produtos').update(produtoIn(v)).eq('id', v.id).select().single();
   if (error) throw error;
   return produtoOut(data);
 }

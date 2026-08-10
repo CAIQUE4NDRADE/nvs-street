@@ -3,7 +3,7 @@ import {
   Menu, X, MessageCircle, Instagram, Search,
   Plus, Pencil, Trash2, LayoutGrid, Users, ClipboardList, Wallet,
   LayoutDashboard, ArrowLeft, Lock, AlertTriangle,
-  LogOut, Eye, EyeOff, Loader2, ChevronRight, ShoppingBag, Truck, CreditCard,
+  LogOut, Eye, EyeOff, Loader2, ChevronRight, ChevronLeft, ShoppingBag, Truck, CreditCard,
   Minus, RefreshCw, Percent, Heart
 } from 'lucide-react';
 import * as api from './lib/api';
@@ -99,12 +99,50 @@ function PhotoSlot({ src, alt = '', label = '', tone = 'dark', className = '', l
 }
 
 // ---------- Lightbox: abre a foto do produto em tela cheia ao clicar ----------
-function ImageLightbox({ image, onClose }) {
-  if (!image) return null;
+function ImageLightbox({ images, onClose }) {
+  const [index, setIndex] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const startX = React.useRef(null);
+
+  useEffect(() => { setIndex(0); }, [images]);
+
+  if (!images || images.length === 0) return null;
+  const has2 = images.length > 1;
+  const go = (dir) => setIndex(i => (i + dir + images.length) % images.length);
+
+  const onTouchStart = (e) => { startX.current = e.touches[0].clientX; };
+  const onTouchMove = (e) => { if (startX.current !== null) setDragX(e.touches[0].clientX - startX.current); };
+  const onTouchEnd = () => {
+    if (Math.abs(dragX) > 60) go(dragX < 0 ? 1 : -1);
+    setDragX(0); startX.current = null;
+  };
+
   return (
     <div className="nv-lightbox-overlay" onClick={onClose}>
       <button className="nv-lightbox-close" onClick={onClose}><X size={24} /></button>
-      <img className="nv-lightbox-img" src={image.src} alt={image.alt} onClick={e => e.stopPropagation()} />
+      {has2 && (
+        <button className="nv-lightbox-arrow left" onClick={e => { e.stopPropagation(); go(-1); }}><ChevronLeft size={22} /></button>
+      )}
+      <img
+        className="nv-lightbox-img"
+        src={images[index].src}
+        alt={images[index].alt}
+        onClick={e => e.stopPropagation()}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        style={{ transform: `translateX(${dragX}px)`, transition: dragX === 0 ? 'transform .2s ease' : 'none' }}
+      />
+      {has2 && (
+        <button className="nv-lightbox-arrow right" onClick={e => { e.stopPropagation(); go(1); }}><ChevronRight size={22} /></button>
+      )}
+      {has2 && (
+        <div className="nv-lightbox-dots" onClick={e => e.stopPropagation()}>
+          {images.map((_, i) => (
+            <span key={i} className={i === index ? 'active' : ''} onClick={() => setIndex(i)}></span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -368,36 +406,37 @@ function FinanceiroPanel({ pedidos, despesas, onNovaDespesa, onDeleteDespesa }) 
 
 function ProdutoForm({ data, onSave, onClose, offline }) {
   const [f, setF] = useState({
-    nome: '', categoria: CATEGORIAS[0], cor: '', tamanho: TAMANHOS[0], marca: '', imagemUrl: '',
+    nome: '', categoria: CATEGORIAS[0], cor: '', tamanho: TAMANHOS[0], marca: '', imagemUrl: '', imagemUrl2: '',
     preco: '', precoAntigo: '', custo: '', estoque: '', status: 'Disponível', fornecedor: '', observacoes: '',
     ...data,
   });
-  const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
+  const [uploading, setUploading] = useState({ imagemUrl: false, imagemUrl2: false });
+  const [uploadError, setUploadError] = useState({ imagemUrl: '', imagemUrl2: '' });
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
 
-  const handleFile = async (e) => {
+  const handleFile = (field) => async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setUploadError('');
-    if (offline) { setUploadError('Conecte o Supabase para enviar fotos (veja README).'); return; }
+    setUploadError(prev => ({ ...prev, [field]: '' }));
+    if (offline) { setUploadError(prev => ({ ...prev, [field]: 'Conecte o Supabase para enviar fotos (veja README).' })); return; }
     // Prévia imediata enquanto sobe o arquivo
-    setF(prev => ({ ...prev, imagemUrl: URL.createObjectURL(file) }));
-    setUploading(true);
+    setF(prev => ({ ...prev, [field]: URL.createObjectURL(file) }));
+    setUploading(prev => ({ ...prev, [field]: true }));
     try {
       const ext = file.name.split('.').pop().toLowerCase();
       const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
       const { error: upErr } = await supabase.storage.from('produtos').upload(fileName, file, { upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from('produtos').getPublicUrl(fileName);
-      setF(prev => ({ ...prev, imagemUrl: pub.publicUrl }));
+      setF(prev => ({ ...prev, [field]: pub.publicUrl }));
     } catch (err) {
       console.error(err);
-      setUploadError('Não foi possível enviar a foto. Rode supabase/migracao-storage-produtos.sql (veja README) e tente de novo.');
+      setUploadError(prev => ({ ...prev, [field]: 'Não foi possível enviar a foto. Rode supabase/migracao-storage-produtos.sql (veja README) e tente de novo.' }));
     } finally {
-      setUploading(false);
+      setUploading(prev => ({ ...prev, [field]: false }));
     }
   };
+  const anyUploading = uploading.imagemUrl || uploading.imagemUrl2;
 
   return (
     <Modal title={data.id ? 'Editar produto' : 'Novo produto'} onClose={onClose}>
@@ -406,20 +445,36 @@ function ProdutoForm({ data, onSave, onClose, offline }) {
         <Field label="Marca"><input className="nv-input" value={f.marca} onChange={set('marca')} placeholder="ex: Lacoste" /></Field>
       </div>
 
-      <Field label="Foto do produto">
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ height: 80, width: 80, flex: 'none' }}>
-            <PhotoSlot tone="light" src={f.imagemUrl} label="sem foto" />
+      <div className="nv-form-grid">
+        <Field label="Foto da frente">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ height: 70, width: 70, flex: 'none' }}>
+              <PhotoSlot tone="light" src={f.imagemUrl} label="sem foto" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl ? 'wait' : 'pointer', display: 'inline-flex' }}>
+                {uploading.imagemUrl ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
+                <input type="file" accept="image/*" onChange={handleFile('imagemUrl')} disabled={uploading.imagemUrl} style={{ display: 'none' }} />
+              </label>
+              {uploadError.imagemUrl && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError.imagemUrl}</div>}
+            </div>
           </div>
-          <div style={{ flex: 1 }}>
-            <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading ? 'wait' : 'pointer', display: 'inline-flex' }}>
-              {uploading ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo do computador'}
-              <input type="file" accept="image/*" onChange={handleFile} disabled={uploading} style={{ display: 'none' }} />
-            </label>
-            {uploadError && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError}</div>}
+        </Field>
+        <Field label="Foto de trás (opcional)">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ height: 70, width: 70, flex: 'none' }}>
+              <PhotoSlot tone="light" src={f.imagemUrl2} label="sem foto" />
+            </div>
+            <div style={{ flex: 1 }}>
+              <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl2 ? 'wait' : 'pointer', display: 'inline-flex' }}>
+                {uploading.imagemUrl2 ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
+                <input type="file" accept="image/*" onChange={handleFile('imagemUrl2')} disabled={uploading.imagemUrl2} style={{ display: 'none' }} />
+              </label>
+              {uploadError.imagemUrl2 && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError.imagemUrl2}</div>}
+            </div>
           </div>
-        </div>
-      </Field>
+        </Field>
+      </div>
 
       <div className="nv-form-grid">
         <Field label="Categoria"><select className="nv-select" value={f.categoria} onChange={set('categoria')}>{CATEGORIAS.map(c => <option key={c}>{c}</option>)}</select></Field>
@@ -439,7 +494,7 @@ function ProdutoForm({ data, onSave, onClose, offline }) {
       </div>
       <Field label="Status"><select className="nv-select" value={f.status} onChange={set('status')}>{STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}</select></Field>
       <Field label="Observações"><textarea className="nv-textarea" rows={2} value={f.observacoes} onChange={set('observacoes')} /></Field>
-      <button className="nv-btn nv-btn-red" disabled={uploading} style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={() => f.nome && onSave(f)}>{uploading ? 'Aguarde o envio da foto...' : 'Salvar'}</button>
+      <button className="nv-btn nv-btn-red" disabled={anyUploading} style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={() => f.nome && onSave(f)}>{anyUploading ? 'Aguarde o envio da foto...' : 'Salvar'}</button>
     </Modal>
   );
 }
@@ -936,7 +991,11 @@ export default function NvsStreetApp() {
             return (
               <div className="nv-card nv-card-v2" key={p.id}>
                 <div className="nv-swatch">
-                  <PhotoSlot tone="light" fit="contain" src={p.imagemUrl} alt={p.nome} label={`Foto pendente — ${p.nome}`} onImageClick={setLightbox} />
+                  <PhotoSlot
+                    tone="light" fit="contain" src={p.imagemUrl} alt={p.nome} label={`Foto pendente — ${p.nome}`}
+                    onImageClick={() => setLightbox([p.imagemUrl, p.imagemUrl2].filter(Boolean).map(src => ({ src, alt: p.nome })))}
+                  />
+                  {p.imagemUrl && p.imagemUrl2 && <span className="nv-two-photos-badge">frente/costas</span>}
                   {desconto && <span className="nv-discount-badge">-{desconto}%</span>}
                   <button className={`nv-fav-btn ${isFav ? 'active' : ''}`} onClick={() => toggleFavorite(p.id)}><Heart size={14} fill={isFav ? 'currentColor' : 'none'} /></button>
                   <span className="tag">{p.tamanho}</span>
@@ -1089,7 +1148,7 @@ export default function NvsStreetApp() {
       <a className="nv-whatsapp-fab" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer"><MessageCircle color="white" size={24} /></a>
 
       {cartOpen && <CartDrawer cart={cart} produtos={produtos} onClose={() => setCartOpen(false)} onQty={setQty} onRemove={removeFromCart} onCheckout={checkoutWhatsapp} />}
-      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
+      <ImageLightbox images={lightbox} onClose={() => setLightbox(null)} />
       {toast && <div className="nv-toast" style={{ textTransform: 'none' }}>{toast}</div>}
     </div>
   );

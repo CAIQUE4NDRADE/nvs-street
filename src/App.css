@@ -285,6 +285,27 @@ body { margin: 0; }
 @media (max-width: 640px) {
   .nv-lightbox-close { top: 12px; right: 12px; width: 38px; height: 38px; }
 }
+.nv-lightbox-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 91;
+  width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25); color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+.nv-lightbox-arrow.left { left: 18px; }
+.nv-lightbox-arrow.right { right: 18px; }
+@media (max-width: 640px) {
+  .nv-lightbox-arrow { width: 38px; height: 38px; }
+  .nv-lightbox-arrow.left { left: 8px; }
+  .nv-lightbox-arrow.right { right: 8px; }
+}
+.nv-lightbox-dots { position: absolute; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 91; display: flex; gap: 8px; }
+.nv-lightbox-dots span { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.35); cursor: pointer; }
+.nv-lightbox-dots span.active { background: #fff; }
+.nv-two-photos-badge {
+  position: absolute; bottom: 10px; right: 10px; z-index: 3;
+  background: rgba(0,0,0,0.6); color: #fff; font-size: 0.62rem; font-weight: 700;
+  padding: 3px 8px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.03em;
+}
 .nv-card-v2 .nv-card-body { padding: 14px 16px 16px; }
 .nv-card-v2 .nv-card-body .brand { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.5; font-weight: 700; }
 .nv-card-v2 .nv-card-body .name { font-family: 'Anton', sans-serif; font-size: 0.92rem; text-transform: uppercase; margin-top: 3px; color: #141414; }
