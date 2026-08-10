@@ -350,25 +350,61 @@ function FinanceiroPanel({ pedidos, despesas, onNovaDespesa, onDeleteDespesa }) 
   );
 }
 
-function ProdutoForm({ data, onSave, onClose }) {
+function ProdutoForm({ data, onSave, onClose, offline }) {
   const [f, setF] = useState({
     nome: '', categoria: CATEGORIAS[0], cor: '', tamanho: TAMANHOS[0], marca: '', imagemUrl: '',
     preco: '', precoAntigo: '', custo: '', estoque: '', status: 'Disponível', fornecedor: '', observacoes: '',
     ...data,
   });
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadError('');
+    if (offline) { setUploadError('Conecte o Supabase para enviar fotos (veja README).'); return; }
+    // Prévia imediata enquanto sobe o arquivo
+    setF(prev => ({ ...prev, imagemUrl: URL.createObjectURL(file) }));
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage.from('produtos').upload(fileName, file, { upsert: false });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from('produtos').getPublicUrl(fileName);
+      setF(prev => ({ ...prev, imagemUrl: pub.publicUrl }));
+    } catch (err) {
+      console.error(err);
+      setUploadError('Não foi possível enviar a foto. Rode supabase/migracao-storage-produtos.sql (veja README) e tente de novo.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <Modal title={data.id ? 'Editar produto' : 'Novo produto'} onClose={onClose}>
       <div className="nv-form-grid">
         <Field label="Nome *"><input className="nv-input" value={f.nome} onChange={set('nome')} /></Field>
         <Field label="Marca"><input className="nv-input" value={f.marca} onChange={set('marca')} placeholder="ex: Lacoste" /></Field>
       </div>
-      <Field label="URL da foto do produto"><input className="nv-input" value={f.imagemUrl} onChange={set('imagemUrl')} placeholder="https://..." /></Field>
-      {f.imagemUrl && (
-        <div style={{ marginBottom: 14, height: 90, width: 90 }}>
-          <PhotoSlot tone="light" src={f.imagemUrl} label="prévia" />
+
+      <Field label="Foto do produto">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ height: 80, width: 80, flex: 'none' }}>
+            <PhotoSlot tone="light" src={f.imagemUrl} label="sem foto" />
+          </div>
+          <div style={{ flex: 1 }}>
+            <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading ? 'wait' : 'pointer', display: 'inline-flex' }}>
+              {uploading ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo do computador'}
+              <input type="file" accept="image/*" onChange={handleFile} disabled={uploading} style={{ display: 'none' }} />
+            </label>
+            {uploadError && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError}</div>}
+          </div>
         </div>
-      )}
+      </Field>
+
       <div className="nv-form-grid">
         <Field label="Categoria"><select className="nv-select" value={f.categoria} onChange={set('categoria')}>{CATEGORIAS.map(c => <option key={c}>{c}</option>)}</select></Field>
         <Field label="Tamanho"><select className="nv-select" value={f.tamanho} onChange={set('tamanho')}>{TAMANHOS.map(t => <option key={t}>{t}</option>)}<option value="Único">Único</option></select></Field>
@@ -387,7 +423,7 @@ function ProdutoForm({ data, onSave, onClose }) {
       </div>
       <Field label="Status"><select className="nv-select" value={f.status} onChange={set('status')}>{STATUS_LIST.map(s => <option key={s} value={s}>{s}</option>)}</select></Field>
       <Field label="Observações"><textarea className="nv-textarea" rows={2} value={f.observacoes} onChange={set('observacoes')} /></Field>
-      <button className="nv-btn nv-btn-red" style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={() => f.nome && onSave(f)}>Salvar</button>
+      <button className="nv-btn nv-btn-red" disabled={uploading} style={{ width: '100%', justifyContent: 'center', marginTop: 8 }} onClick={() => f.nome && onSave(f)}>{uploading ? 'Aguarde o envio da foto...' : 'Salvar'}</button>
     </Modal>
   );
 }
@@ -754,7 +790,7 @@ export default function NvsStreetApp() {
           </div>
         </div>
 
-        {produtoModal !== null && <ProdutoForm data={produtoModal} onSave={saveProduto} onClose={() => setProdutoModal(null)} />}
+        {produtoModal !== null && <ProdutoForm data={produtoModal} onSave={saveProduto} onClose={() => setProdutoModal(null)} offline={offline} />}
         {clienteModal !== null && <ClienteForm data={clienteModal} onSave={saveCliente} onClose={() => setClienteModal(null)} />}
         {pedidoModal !== null && <PedidoForm data={pedidoModal} produtos={produtos.filter(p => p.estoque > 0)} clientes={clientes} onSave={savePedido} onClose={() => setPedidoModal(null)} />}
         {despesaModal !== null && <DespesaForm data={despesaModal} onSave={saveDespesa} onClose={() => setDespesaModal(null)} />}

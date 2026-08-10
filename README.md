@@ -165,3 +165,22 @@ visual até a foto real chegar.
 **Carrinho, checkout, login e banco de dados existentes não foram tocados** —
 só a apresentação visual, mais os 2 campos novos (marca, preço antigo — já
 existentes da atualização anterior) e agora `imagem_url`.
+
+## Upload de foto direto do computador (Supabase Storage)
+
+Agora, ao criar ou editar um produto no painel admin, tem um botão
+**"Escolher arquivo do computador"** — sem precisar colar link de foto.
+
+Antes de usar pela primeira vez, rode uma vez no SQL Editor do Supabase:
+
+```
+supabase/migracao-storage-produtos.sql
+```
+
+Isso cria o espaço de armazenamento ("bucket") chamado `produtos`, público
+para leitura (o site mostra a foto pra qualquer visitante) e restrito para
+envio/exclusão (só a loja logada consegue subir foto nova).
+
+Sem rodar essa migração, o botão de upload mostra um aviso pedindo pra
+configurar o Storage primeiro. O campo de URL manual continua funcionando
+como alternativa, se você já tiver a foto hospedada em outro lugar.
