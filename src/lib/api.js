@@ -4,6 +4,7 @@ import { supabase } from './supabase';
 const produtoOut = (p) => ({
   id: p.id, codigo: p.codigo, nome: p.nome, categoria: p.categoria, cor: p.cor,
   tamanho: p.tamanho, preco: p.preco, precoAntigo: p.preco_antigo, marca: p.marca || '',
+  imagemUrl: p.imagem_url || '',
   custo: p.custo, estoque: p.estoque, status: p.status,
   fornecedor: p.fornecedor || '', observacoes: p.observacoes || '',
 });
@@ -12,6 +13,7 @@ const produtoIn = (p) => ({
   preco: Number(p.preco) || 0,
   preco_antigo: p.precoAntigo === '' || p.precoAntigo == null ? null : Number(p.precoAntigo),
   marca: p.marca || null,
+  imagem_url: p.imagemUrl || null,
   custo: p.custo === '' || p.custo == null ? null : Number(p.custo),
   estoque: Number(p.estoque) || 0, status: p.status,
   fornecedor: p.fornecedor || null, observacoes: p.observacoes || null,

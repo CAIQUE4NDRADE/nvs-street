@@ -11,18 +11,25 @@ body { margin: 0; }
 .nv-accent { color: var(--red); }
 .nv-wrap { max-width:1180px; margin:0 auto; padding:0 28px; }
 
-.nv-photo {
-  position: relative; overflow: hidden;
+.nv-photoslot {
+  position: relative; width: 100%; height: 100%; overflow: hidden;
   background: radial-gradient(120% 140% at 20% 0%, #262626 0%, #141414 55%, #0a0a0a 100%);
+  display: flex; align-items: center; justify-content: center;
 }
-.nv-photo::after {
-  content:''; position:absolute; inset:0;
+.nv-photoslot::after {
+  content:''; position:absolute; inset:0; pointer-events: none;
   background: repeating-linear-gradient(115deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 6px);
 }
-.nv-photo::before {
-  content: attr(data-label); position:absolute; bottom:8px; right:10px;
-  font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(245,245,240,0.25);
+.nv-photoslot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nv-photoslot .placeholder-label {
+  position: relative; z-index: 1; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
+  color: rgba(245,245,240,0.3); text-align: center; padding: 0 14px;
 }
+.nv-photoslot.light {
+  background: linear-gradient(160deg, #f2f2ef 0%, #e4e4e0 100%);
+}
+.nv-photoslot.light::after { background: none; }
+.nv-photoslot.light .placeholder-label { color: rgba(20,20,20,0.32); }
 
 .nv-header { position: sticky; top:0; z-index:30; background: rgba(10,10,10,0.94); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
 
@@ -118,7 +125,7 @@ body { margin: 0; }
 @media (max-width:800px){ .nv-foot-grid{ grid-template-columns:1fr; gap:26px; } }
 .nv-footer p { opacity:.6; font-size:0.85rem; line-height:1.6; margin:0 0 5px; text-transform: none; font-family: 'Inter', sans-serif; }
 .nv-label-small { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.1em; opacity:.5; margin-bottom:10px; font-weight: 700; }
-.nv-bottom-bar { margin-top:40px; padding-top:18px; border-top:1px solid var(--line); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; font-size:0.72rem; opacity:.4; text-transform: uppercase; }
+.nv-bottom-bar { margin-top:40px; padding-top:18px; border-top:1px solid var(--line); display:flex; justify-content:center; flex-wrap:wrap; gap:8px; font-size:0.72rem; opacity:.4; text-transform: uppercase; }
 
 .nv-whatsapp-fab { position:fixed; bottom:24px; right:24px; width:54px; height:54px; border-radius:50%; background:#25D366; display:flex; align-items:center; justify-content:center; box-shadow: 0 10px 30px -8px rgba(0,0,0,0.8); z-index:40; }
 
@@ -241,3 +248,58 @@ body { margin: 0; }
 .nv-promo-item .icon { width: 40px; height: 40px; border-radius: 50%; background: rgba(198,255,61,0.1); border: 1px solid var(--red); display: flex; align-items: center; justify-content: center; flex: none; }
 .nv-promo-item b { display: block; font-size: 0.78rem; text-transform: uppercase; }
 .nv-promo-item span { display: block; font-size: 0.72rem; opacity: 0.55; text-transform: none; font-family: 'Inter', sans-serif; }
+
+/* ---- marcas em destaque ---- */
+.nv-brands-strip { background: #000; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 34px 0; }
+.nv-brands-strip h2 { text-align: center; font-size: 1rem; letter-spacing: 0.14em; margin-bottom: 24px; opacity: 0.85; }
+.nv-brands-row { display: flex; align-items: center; justify-content: center; gap: 44px; flex-wrap: wrap; }
+.nv-brand-word { font-size: 1.2rem; letter-spacing: 0.02em; opacity: 0.92; text-transform: uppercase; font-family: 'Anton', sans-serif; }
+.nv-brand-word.serif { font-family: Georgia, serif; font-style: italic; text-transform: none; font-size: 1.15rem; letter-spacing: 0.01em; }
+.nv-brand-word.flagblock { display: inline-flex; align-items: center; gap: 8px; }
+.nv-brand-word.flagblock .chip { width: 10px; height: 22px; display: inline-block; }
+.nv-brand-word.condensed { font-family: 'Anton', sans-serif; letter-spacing: 0.1em; font-size: 1.05rem; }
+.nv-brand-word.italicwide { font-family: 'Anton', sans-serif; font-style: italic; letter-spacing: 0.03em; font-size: 1.25rem; }
+
+/* ---- cards de produto premium (fundo claro) ---- */
+.nv-card-v2 { background: #f5f5f2; color: #141414; border: 1px solid rgba(0,0,0,0.06); cursor: default; transition: transform .2s ease; position: relative; }
+.nv-card-v2:hover { transform: translateY(-4px); }
+.nv-card-v2 .nv-swatch { height: 220px; }
+.nv-card-v2 .nv-card-body { padding: 14px 16px 16px; }
+.nv-card-v2 .nv-card-body .brand { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.5; font-weight: 700; }
+.nv-card-v2 .nv-card-body .name { font-family: 'Anton', sans-serif; font-size: 0.92rem; text-transform: uppercase; margin-top: 3px; color: #141414; }
+.nv-card-v2 .nv-card-body .occ { font-size: 0.76rem; opacity: 0.5; margin-top: 2px; }
+.nv-card-v2 .nv-price-row .price { color: #141414; font-family: 'Anton', sans-serif; font-size: 1rem; }
+.nv-card-v2 .nv-installments { color: rgba(20,20,20,0.5); }
+.nv-card-v2 .nv-fav-btn { background: rgba(255,255,255,0.85); color: #141414; }
+.nv-card-v2 .nv-fav-btn.active { color: var(--red); }
+
+/* ---- estilo NVS (lifestyle) ---- */
+.nv-lifestyle { padding: 54px 0; }
+.nv-lifestyle-head { text-align: center; margin-bottom: 28px; }
+.nv-lifestyle-head h2 { font-size: clamp(1.6rem,3.4vw,2.2rem); }
+.nv-lifestyle-head .sub { font-size: 0.78rem; letter-spacing: 0.1em; opacity: 0.5; margin-top: 6px; text-transform: uppercase; }
+.nv-lifestyle-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+@media (max-width: 860px) { .nv-lifestyle-grid { grid-template-columns: repeat(2, 1fr); } }
+.nv-lifestyle-tile { position: relative; aspect-ratio: 3/4; }
+.nv-lifestyle-tag { position: absolute; bottom: 10px; left: 10px; z-index: 2; background: rgba(0,0,0,0.6); color: #fff; font-size: 0.66rem; letter-spacing: 0.06em; padding: 5px 10px; text-transform: uppercase; font-weight: 700; }
+
+/* ---- instagram ---- */
+.nv-insta { padding: 44px 0; border-top: 1px solid var(--line); }
+.nv-insta-grid { display: grid; grid-template-columns: 1fr 2.2fr; gap: 24px; align-items: center; }
+@media (max-width: 800px) { .nv-insta-grid { grid-template-columns: 1fr; } }
+.nv-insta-info { display: flex; align-items: center; gap: 14px; }
+.nv-insta-icon { width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; flex: none; }
+.nv-insta-info h3 { font-size: 1rem; }
+.nv-insta-info p { font-size: 0.8rem; opacity: 0.55; margin: 3px 0; text-transform: none; font-family: 'Inter', sans-serif; }
+.nv-insta-info .handle { font-size: 0.82rem; color: var(--red); font-weight: 700; }
+.nv-insta-thumbs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; }
+@media (max-width: 800px) { .nv-insta-thumbs { grid-template-columns: repeat(5, 1fr); margin-top: 4px; } }
+.nv-insta-thumb { aspect-ratio: 1; }
+
+/* ---- faixa whatsapp ---- */
+.nv-whatsapp-banner { background: var(--bg-2); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 30px 0; }
+.nv-wb-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+.nv-wb-left { display: flex; align-items: center; gap: 14px; }
+.nv-wb-icon { width: 46px; height: 46px; border-radius: 50%; background: #25D366; display: flex; align-items: center; justify-content: center; flex: none; }
+.nv-wb-left h3 { font-size: 1.05rem; }
+.nv-wb-left p { font-size: 0.8rem; opacity: 0.55; margin-top: 2px; text-transform: none; font-family: 'Inter', sans-serif; }

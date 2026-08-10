@@ -114,3 +114,54 @@ mesmo sem rodar — só os dois campos novos ficam ocultos.
 Depois de rodar a migração, edite cada produto no painel (Vestidos/Produtos)
 e preencha a Marca (ex: Lacoste, Casablanca) e, se houver promoção, o
 Preço antigo — o desconto e o "Xx de R$..." aparecem sozinhos no card.
+
+## Sistema de imagens (fotos reais + placeholders elegantes)
+
+Foi criado um componente único `<PhotoSlot>` (dentro de `src/App.jsx`) usado
+em todas as seções com imagem: Hero, Categorias, Produtos, Estilo NVS
+(lifestyle), Instagram e carrinho. Ele mostra a foto real quando o arquivo/
+URL existe, e cai automaticamente num placeholder elegante e discreto quando
+não existe — sem quebrar o layout, sem imagem "quebrada".
+
+### Onde colocar cada foto
+
+Veja o guia completo em `public/images/COMO-ADICIONAR-FOTOS.md`. Resumo:
+
+- **Hero:** `public/images/hero/hero-desktop.webp`
+- **Categorias:** `public/images/categorias/{camisetas,moletons,bermudas,calcas,bones,acessorios}.webp`
+- **Estilo NVS (lifestyle):** `public/images/lifestyle/look-01.webp` a `look-04.webp`
+- **Instagram:** `public/images/instagram/post-01.webp` a `post-05.webp`
+- **Produtos:** não é arquivo fixo — cada produto tem um campo **"URL da foto
+  do produto"** no painel admin (Produtos → editar). Cole o link e a foto
+  aparece sozinha no card.
+
+### Sobre as marcas (Lacoste, Nike, Casablanca, Tommy, Boss...)
+
+Os logos oficiais dessas marcas são propriedade registrada — não recriei
+nem gerei versões deles. A seção "Marcas em destaque" usa **tipografia**
+(nome da marca, com um estilo visual distinto por marca) em vez de logo.
+Se você tiver os arquivos oficiais de logo (obtidos com autorização/kit de
+imprensa da marca), me avise que eu troco a tipografia pelas imagens.
+
+### O que ficou como placeholder (por não ter foto/produto real ainda)
+
+Tudo: hero, categorias, lifestyle e Instagram, porque ainda não existem os
+arquivos de foto. Os produtos individuais também ficam em placeholder até
+você preencher a URL da foto de cada um no painel. Nenhum produto, preço ou
+informação de estoque foi inventado — os placeholders só ocupam o espaço
+visual até a foto real chegar.
+
+## Arquivos alterados/criados nesta atualização
+
+| Arquivo | O que mudou |
+|---|---|
+| `src/App.jsx` | Componente `PhotoSlot`; Hero, Marcas em destaque, Categorias, Produtos, Estilo NVS, Instagram e faixa WhatsApp redesenhados; campo de foto no formulário de produto |
+| `src/App.css` | Estilos novos: `nv-photoslot` (placeholder claro/escuro), `nv-brands-strip`, `nv-card-v2` (card de produto claro/premium), `nv-lifestyle`, `nv-insta`, `nv-whatsapp-banner` |
+| `src/lib/api.js` | Campo `imagemUrl` adicionado ao produto |
+| `supabase/migracao-imagem-produto.sql` | **Novo** — adiciona a coluna `imagem_url` (não apaga nada) |
+| `public/images/COMO-ADICIONAR-FOTOS.md` | **Novo** — guia de onde colocar cada foto |
+| `public/images/{hero,categorias,lifestyle,instagram,marcas}/` | **Novas pastas**, prontas para receber os arquivos |
+
+**Carrinho, checkout, login e banco de dados existentes não foram tocados** —
+só a apresentação visual, mais os 2 campos novos (marca, preço antigo — já
+existentes da atualização anterior) e agora `imagem_url`.
