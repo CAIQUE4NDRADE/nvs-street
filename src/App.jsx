@@ -11,6 +11,8 @@ import { supabase } from './lib/supabase';
 import './App.css';
 
 const WHATS = '5519993160867';
+const waLink = (msg) => `https://wa.me/${WHATS}?text=${encodeURIComponent(msg)}`;
+const WA_MSG_GERAL = 'Oi! Vim pelo site da NVS e queria dar uma olhada nas peças disponíveis 👀';
 const CATEGORIAS = ['Camisetas', 'Moletons', 'Jaquetas', 'Calças', 'Bonés', 'Acessórios'];
 const TAMANHOS = ['PP', 'P', 'M', 'G', 'GG'];
 const STATUS_LIST = ['Disponível', 'Baixo estoque', 'Esgotado'];
@@ -854,7 +856,7 @@ export default function NvsStreetApp() {
             <p className="lede">As melhores marcas do streetwear você encontra na NVS.</p>
             <div className="nv-hero-actions">
               <a className="nv-btn nv-btn-red" href="#catalogo">Ver coleção <ChevronRight size={14} /></a>
-              <a className="nv-btn-ghost" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+              <a className="nv-btn-ghost" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
             </div>
           </div>
         </div>
@@ -1016,7 +1018,7 @@ export default function NvsStreetApp() {
               <p>Atendimento rápido e personalizado</p>
             </div>
           </div>
-          <a className="nv-btn nv-btn-red" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
+          <a className="nv-btn nv-btn-red" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer">Falar no WhatsApp</a>
         </div>
       </section>
 
@@ -1034,7 +1036,7 @@ export default function NvsStreetApp() {
             </div>
             <div>
               <div className="nv-label-small">Fale com a gente</div>
-              <a className="nv-btn nv-btn-red" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>
+              <a className="nv-btn nv-btn-red" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer">Chamar no WhatsApp</a>
             </div>
           </div>
           <div className="nv-bottom-bar">
@@ -1043,7 +1045,7 @@ export default function NvsStreetApp() {
         </div>
       </footer>
 
-      <a className="nv-whatsapp-fab" href={`https://wa.me/${WHATS}`} target="_blank" rel="noopener noreferrer"><MessageCircle color="white" size={24} /></a>
+      <a className="nv-whatsapp-fab" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer"><MessageCircle color="white" size={24} /></a>
 
       {cartOpen && <CartDrawer cart={cart} produtos={produtos} onClose={() => setCartOpen(false)} onQty={setQty} onRemove={removeFromCart} onCheckout={checkoutWhatsapp} />}
       {toast && <div className="nv-toast" style={{ textTransform: 'none' }}>{toast}</div>}
