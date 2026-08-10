@@ -452,10 +452,17 @@ function ProdutoForm({ data, onSave, onClose, offline }) {
               <PhotoSlot tone="light" src={f.imagemUrl} label="sem foto" />
             </div>
             <div style={{ flex: 1 }}>
-              <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl ? 'wait' : 'pointer', display: 'inline-flex' }}>
-                {uploading.imagemUrl ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
-                <input type="file" accept="image/*" onChange={handleFile('imagemUrl')} disabled={uploading.imagemUrl} style={{ display: 'none' }} />
-              </label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl ? 'wait' : 'pointer', display: 'inline-flex' }}>
+                  {uploading.imagemUrl ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
+                  <input type="file" accept="image/*" onChange={handleFile('imagemUrl')} disabled={uploading.imagemUrl} style={{ display: 'none' }} />
+                </label>
+                {f.imagemUrl && (
+                  <button type="button" className="nv-btn-ghost nv-btn-sm" style={{ color: '#ff8a80' }} onClick={() => setF(prev => ({ ...prev, imagemUrl: '' }))}>
+                    <Trash2 size={13} /> Remover
+                  </button>
+                )}
+              </div>
               {uploadError.imagemUrl && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError.imagemUrl}</div>}
             </div>
           </div>
@@ -466,10 +473,17 @@ function ProdutoForm({ data, onSave, onClose, offline }) {
               <PhotoSlot tone="light" src={f.imagemUrl2} label="sem foto" />
             </div>
             <div style={{ flex: 1 }}>
-              <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl2 ? 'wait' : 'pointer', display: 'inline-flex' }}>
-                {uploading.imagemUrl2 ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
-                <input type="file" accept="image/*" onChange={handleFile('imagemUrl2')} disabled={uploading.imagemUrl2} style={{ display: 'none' }} />
-              </label>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <label className="nv-btn-ghost nv-btn-sm" style={{ cursor: uploading.imagemUrl2 ? 'wait' : 'pointer', display: 'inline-flex' }}>
+                  {uploading.imagemUrl2 ? <><Loader2 size={13} style={{ animation: 'nvspin 1s linear infinite' }} /> Enviando...</> : 'Escolher arquivo'}
+                  <input type="file" accept="image/*" onChange={handleFile('imagemUrl2')} disabled={uploading.imagemUrl2} style={{ display: 'none' }} />
+                </label>
+                {f.imagemUrl2 && (
+                  <button type="button" className="nv-btn-ghost nv-btn-sm" style={{ color: '#ff8a80' }} onClick={() => setF(prev => ({ ...prev, imagemUrl2: '' }))}>
+                    <Trash2 size={13} /> Remover
+                  </button>
+                )}
+              </div>
               {uploadError.imagemUrl2 && <div className="nv-error" style={{ marginTop: 8, textTransform: 'none' }}><AlertTriangle size={13} /> {uploadError.imagemUrl2}</div>}
             </div>
           </div>
