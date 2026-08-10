@@ -21,6 +21,8 @@ body { margin: 0; }
   background: repeating-linear-gradient(115deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 6px);
 }
 .nv-photoslot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.nv-photoslot.fit-contain img { object-fit: contain; padding: 10px; }
+.nv-photoslot.clickable { cursor: zoom-in; }
 .nv-photoslot .placeholder-label {
   position: relative; z-index: 1; font-size: 0.66rem; letter-spacing: 0.08em; text-transform: uppercase;
   color: rgba(245,245,240,0.3); text-align: center; padding: 0 14px;
@@ -263,7 +265,26 @@ body { margin: 0; }
 /* ---- cards de produto premium (fundo claro) ---- */
 .nv-card-v2 { background: #f5f5f2; color: #141414; border: 1px solid rgba(0,0,0,0.06); cursor: default; transition: transform .2s ease; position: relative; }
 .nv-card-v2:hover { transform: translateY(-4px); }
-.nv-card-v2 .nv-swatch { height: 220px; }
+.nv-card-v2 .nv-swatch { height: 300px; }
+@media (max-width: 640px) { .nv-card-v2 .nv-swatch { height: 260px; } }
+
+/* ---- lightbox: foto do produto em tela cheia ---- */
+.nv-lightbox-overlay {
+  position: fixed; inset: 0; z-index: 90; background: rgba(0,0,0,0.9);
+  display: flex; align-items: center; justify-content: center; padding: 24px;
+  animation: nv-fade-in .15s ease;
+}
+@keyframes nv-fade-in { from { opacity: 0; } to { opacity: 1; } }
+.nv-lightbox-img { max-width: 100%; max-height: 90vh; object-fit: contain; cursor: default; }
+.nv-lightbox-close {
+  position: absolute; top: 18px; right: 18px; z-index: 91;
+  width: 42px; height: 42px; border-radius: 50%; background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.25); color: #fff; display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+}
+@media (max-width: 640px) {
+  .nv-lightbox-close { top: 12px; right: 12px; width: 38px; height: 38px; }
+}
 .nv-card-v2 .nv-card-body { padding: 14px 16px 16px; }
 .nv-card-v2 .nv-card-body .brand { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; opacity: 0.5; font-weight: 700; }
 .nv-card-v2 .nv-card-body .name { font-family: 'Anton', sans-serif; font-size: 0.92rem; text-transform: uppercase; margin-top: 3px; color: #141414; }

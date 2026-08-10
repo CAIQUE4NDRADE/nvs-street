@@ -81,16 +81,30 @@ function Field({ label, children }) {
 
 // ---------- PhotoSlot: mostra a foto real quando existir; senão, um
 // placeholder elegante (nunca inventa produto/foto falsa). ----------
-function PhotoSlot({ src, alt = '', label = '', tone = 'dark', className = '', loading = 'lazy' }) {
+function PhotoSlot({ src, alt = '', label = '', tone = 'dark', className = '', loading = 'lazy', fit = 'cover', onImageClick = null }) {
   const [broken, setBroken] = useState(false);
   const showImg = src && !broken;
   return (
-    <div className={`nv-photoslot ${tone === 'light' ? 'light' : ''} ${className}`}>
+    <div
+      className={`nv-photoslot ${tone === 'light' ? 'light' : ''} ${fit === 'contain' ? 'fit-contain' : ''} ${onImageClick && showImg ? 'clickable' : ''} ${className}`}
+      onClick={showImg && onImageClick ? () => onImageClick({ src, alt }) : undefined}
+    >
       {showImg ? (
         <img src={src} alt={alt} loading={loading} onError={() => setBroken(true)} />
       ) : (
         <span className="placeholder-label">{label}</span>
       )}
+    </div>
+  );
+}
+
+// ---------- Lightbox: abre a foto do produto em tela cheia ao clicar ----------
+function ImageLightbox({ image, onClose }) {
+  if (!image) return null;
+  return (
+    <div className="nv-lightbox-overlay" onClick={onClose}>
+      <button className="nv-lightbox-close" onClick={onClose}><X size={24} /></button>
+      <img className="nv-lightbox-img" src={image.src} alt={image.alt} onClick={e => e.stopPropagation()} />
     </div>
   );
 }
@@ -573,6 +587,7 @@ export default function NvsStreetApp() {
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
   const [favorites, setFavorites] = useState(new Set());
+  const [lightbox, setLightbox] = useState(null);
   const toggleFavorite = (id) => setFavorites(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   useEffect(() => {
@@ -921,7 +936,7 @@ export default function NvsStreetApp() {
             return (
               <div className="nv-card nv-card-v2" key={p.id}>
                 <div className="nv-swatch">
-                  <PhotoSlot tone="light" src={p.imagemUrl} alt={p.nome} label={`Foto pendente — ${p.nome}`} />
+                  <PhotoSlot tone="light" fit="contain" src={p.imagemUrl} alt={p.nome} label={`Foto pendente — ${p.nome}`} onImageClick={setLightbox} />
                   {desconto && <span className="nv-discount-badge">-{desconto}%</span>}
                   <button className={`nv-fav-btn ${isFav ? 'active' : ''}`} onClick={() => toggleFavorite(p.id)}><Heart size={14} fill={isFav ? 'currentColor' : 'none'} /></button>
                   <span className="tag">{p.tamanho}</span>
@@ -1074,6 +1089,7 @@ export default function NvsStreetApp() {
       <a className="nv-whatsapp-fab" href={waLink(WA_MSG_GERAL)} target="_blank" rel="noopener noreferrer"><MessageCircle color="white" size={24} /></a>
 
       {cartOpen && <CartDrawer cart={cart} produtos={produtos} onClose={() => setCartOpen(false)} onQty={setQty} onRemove={removeFromCart} onCheckout={checkoutWhatsapp} />}
+      <ImageLightbox image={lightbox} onClose={() => setLightbox(null)} />
       {toast && <div className="nv-toast" style={{ textTransform: 'none' }}>{toast}</div>}
     </div>
   );
