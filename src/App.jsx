@@ -807,9 +807,9 @@ export default function NvsStreetApp() {
         <PhotoSlot
           tone="dark"
           loading="eager"
-          label="Espaço reservado — foto do hero. Coloque o arquivo em /public/images/hero/hero-desktop.webp"
+          label="Espaço reservado — foto do hero. Coloque o arquivo em /public/images/hero/hero-desktop.png"
           className="nv-hero-photo"
-          src="/images/hero/hero-desktop.webp"
+          src="/images/hero/hero-desktop.png"
         />
         <div className="nv-wrap nv-hero-grid">
           <div className="nv-hero-inner" style={{ padding: 0 }}>
